@@ -1,4 +1,7 @@
 """Small, explicit data layer for measured experiment points."""
+import base64
+import gzip
+import hashlib
 import json
 from pathlib import Path
 
@@ -13,8 +16,29 @@ METRICS = {
 }
 
 
+def _read_payload(path):
+    path = Path(path)
+    payload = json.loads(path.read_text(encoding="utf-8"))
+
+    if payload.get("encoding") == "gzip+base64-parts":
+        part_names = payload.get("parts", [])
+        if not part_names:
+            raise ValueError("Experiment-data manifest contains no parts.")
+        encoded = "".join(
+            (path.parent / name).read_text(encoding="ascii").strip()
+            for name in part_names
+        )
+        raw = gzip.decompress(base64.b64decode(encoded))
+        expected_hash = payload.get("sha256")
+        if expected_hash and hashlib.sha256(raw).hexdigest() != expected_hash:
+            raise ValueError("Experiment-data checksum mismatch.")
+        payload = json.loads(raw.decode("utf-8-sig"))
+
+    return payload
+
+
 def load_experiments(path=DATA_PATH):
-    payload = json.loads(Path(path).read_text())
+    payload = _read_payload(path)
     if payload.get("schema_version") != 1 or not payload.get("scenarios"):
         raise ValueError("Unsupported schema or empty experiment results.")
     for scenario in payload["scenarios"]:
