@@ -2,9 +2,12 @@
   "schema_version": 1,
   "encoding": "gzip+base64-parts",
   "parts": [
-    "experiments.json.gz.b64.part1",
-    "experiments.json.gz.b64.part2",
-    "experiments.json.gz.b64.part3"
+    "experiments.b64.01",
+    "experiments.b64.02",
+    "experiments.b64.03",
+    "experiments.b64.04",
+    "experiments.b64.05",
+    "experiments.b64.06"
   ],
   "sha256": "9c26348779eca0bb36ed756a468fde80712933dbc3c2fbd477e055ea364c3e17"
 }
